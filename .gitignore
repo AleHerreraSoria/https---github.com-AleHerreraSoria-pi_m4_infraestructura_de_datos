@@ -1,0 +1,21 @@
+# Entorno virtual de Python
+venv/
+
+# Archivos de caché de Python
+__pycache__/
+*.pyc
+
+# Archivos de claves secretas
+*.pem
+
+# Archivos de variables de entorno
+.env
+
+# Archivos de configuración de VS Code
+.vscode/
+
+# Logs
+*.log
+
+# Archivos del sistema
+.DS_Store
