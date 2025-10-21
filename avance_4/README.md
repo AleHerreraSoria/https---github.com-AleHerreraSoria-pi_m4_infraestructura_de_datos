@@ -1,4 +1,4 @@
-## **Avance #4 y #5:**
+## **Avance #4 y #5**
 
 ## **Orquestación con Airflow e Implementación de Streaming con Kafka**
 
@@ -134,7 +134,7 @@ Para cumplir con la arquitectura Lambda completa, se implementó un pipeline de 
   * **Solución:** Se editó `server.properties` para separar los listeners (uno para `PLAINTEXT` en el puerto `9092` y otro para `CONTROLLER` en el `9093`), resolviendo el conflicto de KRaft.
 * Se creó el topic: `bin/kafka-topics.sh --create --topic openweather-topic ...`
 
-![Arquitectura Kafka (Listeners)](avance_4\listeners_kafka.jpg)
+![Arquitectura Kafka (Listeners)](listeners_kafka.jpg)
 
 **b. El Productor (`producer.py`):**
 
@@ -145,7 +145,7 @@ Para cumplir con la arquitectura Lambda completa, se implementó un pipeline de 
   2. Parsear la respuesta de WeatherAPI (`current.temp_c`, etc.).
   3. **Reformatear** el JSON de salida para que coincidiera con la estructura que el `consumer.py` esperaba.
 
-![Arquitectura Kafka - Configuración del Productor](avance_4\producer_py.jpg)
+![Arquitectura Kafka - Configuración del Productor](producer_py.jpg)
 
 **c. El Consumidor (`consumer.py`):**
 
@@ -157,6 +157,6 @@ Para cumplir con la arquitectura Lambda completa, se implementó un pipeline de 
   * **Solución:** Se alinearon las versiones: `pip uninstall pyspark` seguido de `pip install pyspark==3.5.1`.
 * **Resultado Final:** Con el productor enviando datos formateados de WeatherAPI y el consumidor corriendo con la versión correcta de Spark, el pipeline de streaming comenzó a escribir datos en tiempo real en la capa `silver` de S3, completando así toda la arquitectura del proyecto.
 
-![Arquitectura Kafka - Configuración del Consumidor](avance_4\consumer_py.jpg)
+![Arquitectura Kafka - Configuración del Consumidor](consumer_py.jpg)
 
-![Arquitectura Kafka Producer/Consumer](avance_4/consumer_py.jpg)
+![Arquitectura Kafka Producer/Consumer](metadata_s3.jpg)
