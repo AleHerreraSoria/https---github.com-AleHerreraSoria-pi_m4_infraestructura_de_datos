@@ -64,7 +64,7 @@ El último paso fue validar que los datos se ingirieron correctamente en nuestro
 
 Con esta validación, se dio por finalizado y completado con éxito el `Avance #2` del proyecto.
 
-![Arquitectura Kafka Producer/Consumer](consumer_py.jpg)
+![Arquitectura API Weather](weather_api_data.jpg)
 
 ---
 
