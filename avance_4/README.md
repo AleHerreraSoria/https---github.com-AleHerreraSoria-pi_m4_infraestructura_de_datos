@@ -100,6 +100,8 @@ Se creó el DAG para definir el flujo de trabajo.
   * **Solución:** Se inició la instancia de Spark, se actualizó la IP pública en la conexión `ssh_spark_worker` de Airflow y se reinició el contenedor de Docker en la instancia de Spark (`docker-compose up -d`).
 * **Resultado: ¡ÉXITO!** El DAG se ejecutó correctamente, orquestando todo el pipeline BATCH.
 
+![Arquitectura Kafka Producer/Consumer](airflow_to_gold.jpg)
+
 **c. Configuración de Alertas por Email:**
 
 * Se generó una "Contraseña de Aplicación" de 16 dígitos en Google (requiere 2-Step-Auth).

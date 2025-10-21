@@ -2,6 +2,8 @@
 
 ## Procesamiento de Datos con Spark
 
+**Realizado por:** Alejandro N. Herrera Soria
+
 Este es el avance central del proyecto, donde se aplica la "Lógica de Transformación (la 'T' en ETLT)".
 
 El objetivo fue leer los datos crudos de las distintas fuentes almacenadas en la capa bronze, unificarlos, limpiarlos y escribirlos en una capa silver optimizada, listos para el análisis.
@@ -19,7 +21,7 @@ La implementación de este avance se dividió en dos fases principales: un inten
 El plan inicial era desarrollar y probar el script de PySpark localmente.
 
 1. Configuración: Se creó un entorno virtual (venv) y se instalaron pyspark, boto3 y s3fs.
-3. Problema 1: ModuleNotFoundError
+2. Problema 1: ModuleNotFoundError
 
 * Error: No module named 'pyspark'.
 * Diagnóstico: Las librerías se habían instalado globalmente antes de activar el venv.
@@ -104,3 +106,5 @@ Una verificación manual en la consola de S3 confirmó el éxito:
 
 * Se encontró el archivo _SUCCESS en silver/weather_data/.
 * Se encontraron las carpetas de partición correctas (ej: year=2024/, year=2025/), que a su vez contenían las sub-particiones de month= y location=, demostrando que el Avance #3 se completó exitosamente.
+
+![Arquitectura Kafka Producer/Consumer](consumer_py.jpg)

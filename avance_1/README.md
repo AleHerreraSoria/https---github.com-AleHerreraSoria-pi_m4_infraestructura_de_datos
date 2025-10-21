@@ -1,9 +1,10 @@
 # **Proyecto Integrador M4: Pipeline de Datos ETLT para Weatherlytics**
 
-## **Avance #1: Diseño de Arquitectura y Configuración del Data Lake**
+## **Avance #1:** 
+
+## **Diseño de Arquitectura y Configuración del Data Lake**
 
 **Autor:** Alejandro Nelson Herrera Soria
-**Fecha:** 01 de Octubre de 2025
 
 ---
 

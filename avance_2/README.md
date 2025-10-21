@@ -1,6 +1,10 @@
-## **Avance #2: Ingesta de Datos con Airbyte**
+## **Avance #2:** 
 
-En esta segunda fase, el objetivo fue construir el primer componente funcional de nuestro pipeline: la ingesta de datos. Utilizando  **Airbyte Cloud** , configuramos y ejecutamos las "tuberías" para mover datos desde dos fuentes distintas (una API pública y una base de datos PostgreSQL) hacia la capa `bronze` de nuestro Data Lake en AWS S3.
+## **Ingesta de Datos con Airbyte**
+
+**Realizado por:** Alejandro N. Herrera Soria
+
+En esta segunda fase, el objetivo fue construir el primer componente funcional de nuestro pipeline: la ingesta de datos. Utilizando  **Airbyte Cloud** , configuramos y ejecutamos la "tubería" para mover datos desde una API pública hacia la capa `bronze` de nuestro Data Lake en AWS S3.
 
 ---
 
@@ -9,25 +13,21 @@ En esta segunda fase, el objetivo fue construir el primer componente funcional d
 Antes de poder ingestar datos, fue necesario configurar el destino final. Para ello, se siguieron las mejores prácticas de seguridad en AWS.
 
 **a. Creación de un Usuario IAM Dedicado:**
-Para permitir que Airbyte acceda a nuestro bucket de forma segura, se creó un usuario programático en AWS IAM con permisos específicos y limitados (principio de mínimo privilegio).
-
-* **Nombre de Usuario:** `airbyte-s3-writer`
-* **Política de Permisos (JSON):** Se creó una política personalizada que solo permite a este usuario listar el bucket y leer/escribir/borrar objetos dentro de él, previniendo cualquier acceso no autorizado a otros recursos de AWS.
+Para permitir que Airbyte acceda a nuestro bucket de forma segura, se creó un usuario programático en AWS IAM (`airbyte-s3-writer`) con una política de permisos personalizada que solo le otorga acceso de lectura y escritura a nuestro bucket S3 (principio de mínimo privilegio).
 
 **b. Configuración del Destino en Airbyte:**
 Con las credenciales del usuario IAM, se configuró el destino en la interfaz de Airbyte Cloud.
 
 * **Nombre del Destino:** `Data Lake S3`
 * **Bucket S3:** `weatherlytics-datalake-dev-us-east-2`
-* **Ruta del Bucket:** `bronze/` ( crucial para asegurar que los datos crudos aterricen en la capa correcta).
+* **Ruta del Bucket:** `bronze/` (crucial para asegurar que los datos crudos aterricen en la capa correcta).
 * **Región:** `us-east-2`
 * **Formato de Salida:**  **Parquet** , un formato columnar eficiente, ideal para análisis posteriores con Spark.
 
 ---
 
-### ### 2. Configuración de las Fuentes de Datos
+### ### 2. Configuración de la Fuente de Datos (API Pública)
 
-**a. Fuente #1: API Pública (WeatherAPI)**
 Para cumplir con la consigna de conectar a una API pública, se utilizó el conector **File** de Airbyte, configurado para leer desde una URL HTTPS.
 
 * **Nombre de la Fuente:** `API Publica - WeatherAPI`
@@ -38,52 +38,39 @@ Para cumplir con la consigna de conectar a una API pública, se utilizó el cone
   ```
 * **Nombre del Dataset:** `weather_api_data` (Este nombre se usará para la carpeta de destino en S3).
 
-**b. Fuente #2: Base de Datos PostgreSQL (Supabase)**
-La conexión a una base de datos PostgreSQL presentó un desafío significativo y una valiosa lección de ingeniería de datos.
-
-* **Intentos Fallidos:** Los intentos iniciales de conectar a bases de datos PostgreSQL públicas (`bit.io`, `aiven.io`) fallaron consistentemente debido a un error de  **timeout** . El análisis de los logs de Airbyte reveló que, aunque el proceso de fondo sí lograba conectarse, la interfaz de usuario de Airbyte Cloud tenía un tiempo de espera demasiado corto (~10s) que estas bases de datos públicas y lentas no podían cumplir.
-* **La Solución Profesional (Pivote a Supabase):** Para superar este obstáculo, se decidió tomar control total del entorno creando una base de datos PostgreSQL dedicada y gratuita en  **Supabase** . Esto nos proporcionó una base de datos rápida y confiable.
-* **Configuración Crítica del Firewall:** El paso clave para el éxito fue configurar las **"Network Restrictions"** (Restricciones de Red) en el panel de Supabase. Se añadieron a la lista blanca (IPv4) todas las direcciones IP de salida proporcionadas por Airbyte Cloud, permitiendo así el tráfico entrante desde sus servidores.
-* **Configuración Final de la Fuente en Airbyte:**
-  * **Nombre de la Fuente:** `Mi DB - Supabase (con Firewall)`
-  * **Host:** Se utilizó el host del *pooler* en modo sesión de Supabase (ej: `aws-0-us-east-1.pooler.supabase.com`), que garantiza compatibilidad de red (IPv4/IPv6).
-  * **Puerto:** `5432`
-  * **Base de Datos:** `postgres`
-  * **Usuario:** `postgres`
-  * **Método de Replicación:** `Detect Changes with Xmin System Column`, como se recomienda para conexiones de solo lectura sin permisos de CDC.
-  * **Modo SSL:** `require`, ya que Supabase exige conexiones seguras.
+*(Nota: Aunque se exploró la ingesta desde una base de datos PostgreSQL, se descartó siguiendo las aclaraciones del profesor sobre el alcance real del proyecto, que se centra en los datos de la API y los archivos JSON históricos).*
 
 ---
 
-### ### 3. Creación y Ejecución de las Conexiones
+### ### 3. Creación y Ejecución de la Conexión
 
-Con las fuentes y el destino configurados, se procedió a crear las dos conexiones, configurando ambas con una frecuencia de replicación **Manual** para tener control total durante el desarrollo.
+Con la fuente y el destino configurados, se procedió a crear la conexión principal.
 
-1. **`API WeatherAPI to S3`** : Conectó la fuente de la API con el destino S3.
-2. **`DB Supabase to S3`** : Conectó la fuente de la base de datos PostgreSQL con el destino S3.
+1. **`API WeatherAPI to S3 (Corregida)`** : Conectó la fuente de la API con el destino S3.
 
-Ambas conexiones se ejecutaron manualmente y se completaron con éxito, como se evidencia en el historial de sincronización de Airbyte.
+Se configuró la conexión con una replicación **`Full Refresh | Overwrite`** y se programó para ejecutarse  **cada 24 horas** , asegurando una ingesta diaria y automática de los datos más recientes del clima.
+
+![Arquitectura Airbyte](airbyte_to_bronze.jpg)
 
 ---
 
 ### ### 4. Validación Final
 
-El último paso fue validar que los datos se hubieran ingestado correctamente en nuestro Data Lake, cumpliendo con la estructura y formato definidos.
+El último paso fue validar que los datos se ingirieron correctamente en nuestro Data Lake:
 
 * Se accedió al bucket `weatherlytics-datalake-dev-us-east-2` a través de la consola de AWS.
-* Dentro de la carpeta `bronze/`, se verificó la existencia de las siguientes estructuras de carpetas, creadas automáticamente por Airbyte:
-  * **`public/public/actor/`** : Conteniendo los datos de la tabla `actor` de la base de datos PostgreSQL.
-  * **`weather_api_data/`** : Conteniendo los datos extraídos de la WeatherAPI.
-* Se navegó dentro de estas carpetas para confirmar que los archivos de datos fueron escritos correctamente en formato  **`.parquet`** .
+* Dentro de la carpeta `bronze/`, se verificó la existencia de la carpeta `weather_api_data/`.
+* Se navegó dentro de esta carpeta para confirmar que Airbyte escribió exitosamente los archivos de datos en formato  **`.parquet`** .
 
 Con esta validación, se dio por finalizado y completado con éxito el `Avance #2` del proyecto.
+
+![Arquitectura Kafka Producer/Consumer](consumer_py.jpg)
 
 ---
 
 ### ### Recursos Utilizados
 
 * **Airbyte Cloud (Free Tier):** Plataforma central para la ingesta de datos.
-* **AWS S3:** Para el almacenamiento en la capa `bronze` de nuestro Data Lake.
+* **AWS S3:** Para el almacenamiento en la capa `bronze`.
 * **AWS IAM:** Para la gestión segura de credenciales de acceso.
-* **Supabase (Free Tier):** Para provisionar una base de datos PostgreSQL rápida, confiable y con control de firewall.
 * **WeatherAPI.com:** Como fuente de datos de API pública.
