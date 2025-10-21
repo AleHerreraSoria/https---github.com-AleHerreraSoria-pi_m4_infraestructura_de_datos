@@ -107,4 +107,4 @@ Una verificación manual en la consola de S3 confirmó el éxito:
 * Se encontró el archivo _SUCCESS en silver/weather_data/.
 * Se encontraron las carpetas de partición correctas (ej: year=2024/, year=2025/), que a su vez contenían las sub-particiones de month= y location=, demostrando que el Avance #3 se completó exitosamente.
 
-![Arquitectura Kafka Producer/Consumer](consumer_py.jpg)
+![Arquitectura Capa Silver](capa_silver.jpg)
