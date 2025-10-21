@@ -1,6 +1,6 @@
 # **Proyecto Integrador M4: Pipeline de Datos ETLT para Weatherlytics**
 
-## **Avance #1:** 
+## **Avance #1**
 
 ## **Diseño de Arquitectura y Configuración del Data Lake**
 
